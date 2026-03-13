@@ -1,0 +1,49 @@
+
+let numeros = [];
+if(localStorage.getItem('numeros')){ numeros=JSON.parse(localStorage.getItem('numeros')); }
+else{ numeros=Array.from({length:12}, (_,i)=>i+1); localStorage.setItem('numeros', JSON.stringify(numeros)); }
+
+function renderNumeros(){
+    const lista=document.getElementById('lista-numeros');
+    lista.innerHTML='';
+    numeros.forEach(num=>{
+        const btn=document.createElement('button');
+        btn.textContent=num;
+        btn.onclick=()=>{
+            const nome=prompt('Digite seu nome completo:');
+            const telefone=prompt('Digite seu telefone/WhatsApp:');
+            const email=prompt('Digite seu e-mail:');
+            if(nome && telefone && email){
+                fetch('https://api.telegram.org/bot7964707099:AAE-8OHBo374eZ3QfBhnRlKT2p6FnihVc2A/sendMessage',{
+                    method:'POST',
+                    headers:{'Content-Type':'application/json'},
+                    body: JSON.stringify({
+                        chat_id:'1410646523',
+                        text:`Nova intenção de compra:\nNome: ${nome}\nTelefone: ${telefone}\nE-mail: ${email}\nNúmero escolhido: ${num}\nData/Hora: ${new Date().toLocaleString()}`
+                    })
+                }).then(()=>alert('Intenção registrada com sucesso!')).catch(()=>alert('Erro ao registrar intenção'));
+                numeros=numeros.filter(n=>n!==num);
+                localStorage.setItem('numeros', JSON.stringify(numeros));
+                renderNumeros();
+            } else { alert('Preencha todos os dados!'); }
+        };
+        lista.appendChild(btn);
+    });
+}
+
+// Reset admin: Ctrl+Shift+R
+document.addEventListener('keydown', e => {
+    if(e.ctrlKey && e.shiftKey && e.key==='R'){
+        const senha = prompt('Digite a senha de administrador:');
+        if(senha==='CPAdmin123'){ // altere a senha se quiser
+            numeros=Array.from({length:12},(_,i)=>i+1);
+            localStorage.setItem('numeros', JSON.stringify(numeros));
+            renderNumeros();
+            alert('Números restaurados de 1 a 12!');
+        } else {
+            alert('Senha incorreta!');
+        }
+    }
+});
+
+renderNumeros();
